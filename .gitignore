@@ -1,0 +1,7 @@
+# ignore all logs
+*.log
+
+#ignore direcotries with names:
+__pycache__/
+bin/
+venv/
