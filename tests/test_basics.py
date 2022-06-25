@@ -6,6 +6,7 @@ class BasicTestCase(unittest.TestCase):
     def setUp(self):
         self.app = create_app('testing')
         self.app_context = self.app.app_context()
+        # push app_context to have access to current_app
         self.app_context.push()
         db.create_all()
     
