@@ -1,7 +1,7 @@
 from flask_login import login_user, logout_user, login_required, current_user
 from flask import render_template, redirect, request, url_for, flash, session
 from app import db
-from ..models import User, Role
+from ..models import User, Role, UserAuthentificationManager
 from ..email import send_email
 from .forms import LoginForm, RegistrationForm
 from . import auth
@@ -13,8 +13,9 @@ def login():
     
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
+        auth_manager = UserAuthentificationManager(user)
 
-        if user is not None and user.verify_password(form.password.data):
+        if user is not None and auth_manager.verify_password(form.password.data):
             login_user(user, form.remember_me.data)     
             
             # The URL in next is validated to make sure it is a relative URL, 
@@ -54,8 +55,9 @@ def register():
         db.session.commit()
         # automatically log in a new (registered) user
         login_user(user)
+        auth_manager = UserAuthentificationManager(user)
 
-        token = user.generate_confirmation_token()
+        token = auth_manager.generate_confirmation_token()
         send_email(user.email, 'Confirm Your Account',
                     'auth/email/confirm', user=user, token=token)
         flash('A confirmation email has been sent to you by email.')
@@ -68,10 +70,11 @@ def register():
 @auth.route('/confirm/<token>')
 @login_required
 def confirm(token):
+    auth_manager = UserAuthentificationManager(current_user)
     if current_user.confirmed:
         flash('Your account is already confirmed.')
         return redirect(url_for('main.index'))
-    if current_user.confirm(token):
+    if auth_manager.confirm(token):
         flash('You have confirmed your account. Thanks!')
     else:
         flash('''The confirmation link is invalid or has expired.
@@ -81,7 +84,7 @@ def confirm(token):
 
 @auth.before_app_request
 def before_request():
-    # user is logged in & not confirmed & 
+    # user is logged in & not confirmed &
     # the request is outside auth blueprint
     if current_user.is_authenticated \
         and not current_user.confirmed \
@@ -91,6 +94,7 @@ def before_request():
 
 
 # UNCONFIRMED PAGE & RESEND CONFIRMATION HANDLER
+# Unconfirmed user can only use this view on the site:
 @auth.route('/unconfirmed')
 def unconfirmed():
     if current_user.is_anonymous or current_user.confirmed:
@@ -101,10 +105,11 @@ def unconfirmed():
 @auth.route('/confirm')
 @login_required
 def resend_confirmation():
-    if current_user.confirmed:
+    if current_user.is_anonymous or current_user.confirmed:
         return redirect(url_for('main.index'))
 
-    token = current_user.generate_confirmation_token()
+    auth_manager = UserAuthentificationManager(current_user)
+    token = auth_manager.generate_confirmation_token()
     send_email(current_user.email, 'Confirm Your Account',
                 'auth/email/confirm', user=current_user, token=token)
     flash('A new confirmation has just been sent to you by email!')

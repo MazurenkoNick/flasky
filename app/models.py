@@ -39,13 +39,21 @@ class User(UserMixin, db.Model):
     def password(self, password):
         self.password_hash = generate_password_hash(password)
 
+    def get_id(self):
+        return str(self.user_id)
+
+
+class UserAuthentificationManager:
+    def __init__(self, user):
+        self.user = user
+
     def verify_password(self, password):
-        return check_password_hash(self.password_hash, password)
+        return check_password_hash(self.user.password_hash, password)
 
     def generate_confirmation_token(self, expiration=3600):
         reset_token = jwt.encode(
             {
-                'confirm': self.user_id,
+                'confirm': self.user.user_id,
                 'exp': datetime.datetime.now(tz=datetime.timezone.utc)
                         + datetime.timedelta(seconds=expiration)
             },
@@ -66,18 +74,15 @@ class User(UserMixin, db.Model):
         except:
             return False
 
-        if data.get('confirm') != self.user_id:
+        if data.get('confirm') != self.user.user_id:
             # user will be deleted from the database if
             # confirmation isn't successfull
-            db.session.delete(self)
+            db.session.delete(self.user)
             db.session.commit()
             return False
-        self.confirmed = True
+        self.user.confirmed = True
         db.session.commit()
         return True
-
-    def get_id(self):
-        return str(self.user_id)
 
 
 @login_manager.user_loader
