@@ -1,7 +1,7 @@
 Dear {{ user.username }},
 Welcome to FLASKY!
 
-To confirm your account please click on the followeing link:
+To confirm your account please click on the following link:
 {{ url_for('auth.confirm', token=token, _external=True) }}
 
 Sincerely, 

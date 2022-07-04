@@ -15,11 +15,11 @@ class Role(db.Model):
     users = db.relationship('User', backref='role')
 
     def __repr__(self):
-        return '<Role %r>' % self.name
+        return f'<Role {self.name}>'
 
 
 class User(UserMixin, db.Model):
-    __tablenames__ = 'users'
+    __tablename__ = 'users'
     user_id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(64), unique=True, index=True)
     username = db.Column(db.String(64), index=True)
@@ -29,7 +29,7 @@ class User(UserMixin, db.Model):
     confirmed = db.Column(db.Boolean, default=False)
     
     def __repr__(self):
-        return '<Role %r>' % self.username
+        return f'<User {self.username}>'
 
     @property
     def password(self):
@@ -75,13 +75,7 @@ class UserAuthentificationManager:
             return False
 
         if data.get('confirm') != self.user.user_id:
-            # user will be deleted from the database if
-            # confirmation isn't successfull
-            db.session.delete(self.user)
-            db.session.commit()
             return False
-        self.user.confirmed = True
-        db.session.commit()
         return True
 
 

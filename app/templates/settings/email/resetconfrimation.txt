@@ -1,0 +1,9 @@
+Dear {{ user.username }},
+
+If you really want to reset your password click on the link otherwise just ignore this message:
+{{ url_for('settings.reset_password', token=token, _external=True) }}
+
+Sincerely, 
+The Flasky Team
+
+Note: replies to this email adress are not monitored.

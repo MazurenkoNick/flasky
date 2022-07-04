@@ -1,11 +1,15 @@
 import unittest
-from app.models import User
+from app.models import User, UserAuthentificationManager
 from app import db
 
 
 class UserModelTestCase(unittest.TestCase):
     def setUp(self):
-        db.session.query(User).delete()
+        db.create_all()
+    
+    def tearDown(self):
+        db.session.remove()
+        db.drop_all()
 
     def test_password_setter(self):
         u = User(username='Y')
@@ -22,10 +26,11 @@ class UserModelTestCase(unittest.TestCase):
     def test_password_verivication(self):
         u = User(username='Ivan')
         u.password = 'cat'
+        auth_manager = UserAuthentificationManager(u)
 
-        self.assertTrue(u.verify_password('cat'))
-        self.assertFalse(u.verify_password('dog'))
-        self.assertFalse(u.verify_password('cAt'))
+        self.assertTrue(auth_manager.verify_password('cat'))
+        self.assertFalse(auth_manager.verify_password('dog'))
+        self.assertFalse(auth_manager.verify_password('cAt'))
 
     def test_password_salts_are_random(self):
         u1 = User(username='Ivan')
@@ -38,15 +43,17 @@ class UserModelTestCase(unittest.TestCase):
     def test_token_confirmation(self):
         u1 = User(email='smth@gmail.com', username='Ivan')
         u1.password = 'cat'
-        u2 = User(email='smth2@gmail.cpm', username='ivan')
+        u2 = User(email='smth2@gmail.com', username='ivan')
         u2.password = 'cat'
         db.session.add(u1)
         db.session.add(u2)
         db.session.commit()
 
-        token1 = u1.generete_confirmation_token()
-        token2 = u2.generete_confirmation_token()
+        auth_manager1 = UserAuthentificationManager(u1)
+        auth_manager2 = UserAuthentificationManager(u2)
+        token1 = auth_manager1.generate_confirmation_token()
+        token2 = auth_manager2.generate_confirmation_token()
 
-        self.assertTrue(u1.confirm(token1))
-        self.assertTrue(u2.confirm(token2))
-        self.assertEquals(u1.confirm(token2), False)
+        self.assertTrue(auth_manager1.confirm(token1))
+        self.assertTrue(auth_manager2.confirm(token2))
+        self.assertEquals(auth_manager1.confirm(auth_manager2), False)

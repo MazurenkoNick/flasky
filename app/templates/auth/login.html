@@ -13,4 +13,10 @@ New user?
 
 {{ wtf.quick_form(form) }}
 
+<br>
+<p>
+Do you want to reset your password?
+<a href="{{ url_for('settings.send_reset_confirmation') }}">- Click here</a>
+</p>
+
 {% endblock %}

@@ -75,10 +75,14 @@ def confirm(token):
         flash('Your account is already confirmed.')
         return redirect(url_for('main.index'))
     if auth_manager.confirm(token):
+        current_user.confirmed = True
+        db.session.commit()
         flash('You have confirmed your account. Thanks!')
     else:
         flash('''The confirmation link is invalid or has expired.
         Your account will be deleted! Register again, please.''')
+        User.query.filter_by(username=current_user.username).delete()
+        db.session.commit()
     return redirect(url_for('main.index'))
 
 
@@ -102,7 +106,7 @@ def unconfirmed():
     return render_template('auth/unconfirmed.html')
 
 
-@auth.route('/confirm')
+@auth.route('/resend_confirmation')
 @login_required
 def resend_confirmation():
     if current_user.is_anonymous or current_user.confirmed:
