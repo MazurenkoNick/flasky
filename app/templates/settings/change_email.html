@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% block title %}Flasky{% endblock %}
+{% block page_content %}
+<h2>Enter a new email. The confirmation letter will be sent to it.</h2>
+{{ wtf.quick_form(form) }}
+
+{% endblock %}

@@ -47,19 +47,26 @@ def register():
     if form.validate_on_submit():
         # add user to db. If user won't confirm the 
         # registration, he we'll be deleted from db
-        user = User(email=form.email.data,
-                    username=form.username.data,
-                    password=form.password.data,
-                    role=user_role)
+        user = User(
+            email=form.email.data,
+            username=form.username.data,
+            password=form.password.data,
+            role=user_role
+        )
         db.session.add(user)
         db.session.commit()
         # automatically log in a new (registered) user
         login_user(user)
         auth_manager = UserAuthentificationManager(user)
 
-        token = auth_manager.generate_confirmation_token()
-        send_email(user.email, 'Confirm Your Account',
-                    'auth/email/confirm', user=user, token=token)
+        token = auth_manager.generate_user_confirmation_token()
+        send_email(
+            user.email, 
+            'Confirm Your Account',
+            'auth/email/confirm', 
+            user=user, 
+            token=token
+        )
         flash('A confirmation email has been sent to you by email.')
         return redirect(url_for('main.index'))
 
@@ -74,7 +81,7 @@ def confirm(token):
     if current_user.confirmed:
         flash('Your account is already confirmed.')
         return redirect(url_for('main.index'))
-    if auth_manager.confirm(token):
+    if auth_manager.confirm_user(token):
         current_user.confirmed = True
         db.session.commit()
         flash('You have confirmed your account. Thanks!')
@@ -113,8 +120,13 @@ def resend_confirmation():
         return redirect(url_for('main.index'))
 
     auth_manager = UserAuthentificationManager(current_user)
-    token = auth_manager.generate_confirmation_token()
-    send_email(current_user.email, 'Confirm Your Account',
-                'auth/email/confirm', user=current_user, token=token)
+    token = auth_manager.generate_user_confirmation_token()
+    send_email(
+        current_user.email, 
+        'Confirm Your Account',
+        'auth/email/confirm', 
+        user=current_user, 
+        token=token
+    )
     flash('A new confirmation has just been sent to you by email!')
     return redirect(url_for('main.index'))        
