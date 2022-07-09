@@ -41,6 +41,9 @@ def logout():
 # USER REGISTRATION
 @auth.route('/register', methods=['GET', 'POST'])
 def register():
+    if current_user.is_authenticated:
+        return redirect(url_for('main.index'))
+
     form = RegistrationForm()
     user_role = Role.query.filter_by(name='user').first()
 

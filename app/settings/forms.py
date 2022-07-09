@@ -1,18 +1,20 @@
 from flask_wtf import FlaskForm
 from flask_login import current_user
 from wtforms import PasswordField, SubmitField, EmailField
-from wtforms.validators import DataRequired, EqualTo, ValidationError
+from wtforms.validators import DataRequired, EqualTo, Email, ValidationError
 from ..models import UserAuthentificationManager, User
 
 
 class ChangePasswordForm(FlaskForm):
-    current_password = PasswordField('Enter the current password', validators=[DataRequired()])
-    new_password = PasswordField('Enter a new password', 
-                                validators=[
-                                    EqualTo('confirm_password',
-                                    message='Passwords must match.')
-                                    ])
-    confirm_password = PasswordField('Confrim your password', validators=[DataRequired()])
+    current_password = PasswordField('Enter the current password',
+                                     validators=[DataRequired()])
+    new_password = PasswordField(
+        'Enter a new password',
+        validators=[EqualTo(
+            'confirm_password',
+            message='Passwords must match.')])
+    confirm_password = PasswordField('Confrim your password',
+                                     validators=[DataRequired()])
     submit = SubmitField('Submit')
 
     def validate_current_password(self, field):
@@ -22,7 +24,7 @@ class ChangePasswordForm(FlaskForm):
 
 
 class EmailForm(FlaskForm):
-    email = EmailField('', validators=[DataRequired()])
+    email = EmailField('', validators=[DataRequired(), Email()])
     submit = SubmitField('Submit')
 
     def validate_email(self, field):
@@ -32,15 +34,16 @@ class EmailForm(FlaskForm):
 
 
 class ResetPasswordForm(FlaskForm):
-    password1 = PasswordField('Enter a new password',
-                            validators=[DataRequired(),
-                            EqualTo('password2', 'Passwords must match.')])
+    password1 = PasswordField(
+        'Enter a new password', validators=[
+            DataRequired(), EqualTo(
+                'password2', 'Passwords must match.')])
     password2 = PasswordField('Repeat again')
-    submit  = SubmitField('Submit')
+    submit = SubmitField('Submit')
 
 
 class NewEmailForm(FlaskForm):
-    email = EmailField('', validators=[DataRequired()])
+    email = EmailField('', validators=[DataRequired(), Email()])
     submit = SubmitField('Submit')
 
     def validate_email(self, field):

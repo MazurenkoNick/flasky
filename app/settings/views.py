@@ -8,7 +8,7 @@ from . import settings
 
 
 # CHANGE PASSWORD
-@settings.route('/changepassword', methods=['GET','POST'])
+@settings.route('/changepassword', methods=['GET', 'POST'])
 @login_required
 def change_password():
     form = ChangePasswordForm()
@@ -25,7 +25,7 @@ def change_password():
 
 # RESET PASSWORD
 @settings.route('/resetpassword', methods=['GET', 'POST'])
-def send_reset_confirmation():
+def send_reset_password_confirmation():
     form = EmailForm()
 
     if form.validate_on_submit():
@@ -45,7 +45,7 @@ def send_reset_confirmation():
     return render_template('settings/sendresetpassword.html', form=form)
     
 
-@settings.route("/resetpassword/<token>", methods=['GET','POST'])
+@settings.route("/resetpassword/<token>", methods=['GET', 'POST'])
 def reset_password(token):
     if current_user.is_authenticated:
         flash('User is logged in')
@@ -72,14 +72,14 @@ def send_change_email_confirmation():
     if form.validate_on_submit():
         user = User.query.filter_by(email=current_user.email).first()
         auth_manager = UserAuthentificationManager(user)
-        token = auth_manager.generate_email_token(new_email=form.email.data)
+        token = auth_manager.generate_new_email_token(new_email=form.email.data)
 
         flash('Confirmation email has been sent')
         send_email(
-            form.email.data, 
+            form.email.data,
             'Confirm Email Change',
-            'settings/email/confirm_email_change', 
-            user=user, 
+            'settings/email/confirm_email_change',
+            user=user,
             token=token
         )
         return redirect(url_for('main.index'))
@@ -90,9 +90,9 @@ def send_change_email_confirmation():
 @login_required
 def change_email(token):
     auth_manager = UserAuthentificationManager(current_user)
-    if auth_manager.change_email_token(token):
+    if auth_manager.change_email(token):
         flash('You\'ve successfully changed your email')
     else:
         flash('We didn\'t manage to change your email')
-        
+
     return redirect(url_for('main.index'))

@@ -97,7 +97,7 @@ class UserAuthentificationManager:
             return False
         return True
 
-    def generate_email_token(self, new_email, expiration=3600):
+    def generate_new_email_token(self, new_email, expiration=3600):
         email_token = jwt.encode(
             {
                 'user_id': self.user.user_id,
@@ -111,7 +111,7 @@ class UserAuthentificationManager:
         )
         return email_token
 
-    def change_email_token(self, token):
+    def change_email(self, token):
         try:
             data = jwt.decode(
                 token,
@@ -126,7 +126,9 @@ class UserAuthentificationManager:
         if user:
             user.email = data.get('new_email')
             db.session.commit()
-        return True
+            return True
+        else:
+            return False
 
 
 @login_manager.user_loader
