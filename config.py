@@ -3,6 +3,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 
 class Config:
+    FLASKY_ADMIN = os.environ.get('FLASKY_ADMIN')
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'hard to guess key'
     MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.googlemail.com')
     MAIL_PORT = int(os.environ.get('MAIL_PORT', '587'))

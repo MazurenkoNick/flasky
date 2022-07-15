@@ -3,7 +3,7 @@ from app import create_app, db
 from app.models import User, Role
 
 
-app = create_app('development')
+app = create_app('testing')
 migrate = Migrate(app, db)
 
 @app.shell_context_processor

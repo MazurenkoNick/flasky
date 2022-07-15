@@ -45,7 +45,6 @@ def register():
         return redirect(url_for('main.index'))
 
     form = RegistrationForm()
-    user_role = Role.query.filter_by(name='user').first()
 
     if form.validate_on_submit():
         # add user to db. If user won't confirm the 
@@ -53,8 +52,7 @@ def register():
         user = User(
             email=form.email.data,
             username=form.username.data,
-            password=form.password.data,
-            role=user_role
+            password=form.password.data
         )
         db.session.add(user)
         db.session.commit()

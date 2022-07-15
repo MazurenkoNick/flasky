@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 88083de72f13
-Revises: 6a07f61ef43f
-Create Date: 2022-07-04 10:14:42.607835
+Revision ID: d3035585635a
+Revises: 5c16e84800d9
+Create Date: 2022-07-13 22:34:59.107196
 
 """
 from alembic import op
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '88083de72f13'
-down_revision = '6a07f61ef43f'
+revision = 'd3035585635a'
+down_revision = '5c16e84800d9'
 branch_labels = None
 depends_on = None
 
@@ -21,9 +21,12 @@ def upgrade():
     op.create_table('roles',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(length=64), nullable=True),
+    sa.Column('default', sa.Boolean(), nullable=True),
+    sa.Column('permissions', sa.Integer(), nullable=True),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('name')
     )
+    op.create_index(op.f('ix_roles_default'), 'roles', ['default'], unique=False)
     op.create_table('users',
     sa.Column('user_id', sa.Integer(), nullable=False),
     sa.Column('email', sa.String(length=64), nullable=True),
@@ -44,5 +47,6 @@ def downgrade():
     op.drop_index(op.f('ix_users_username'), table_name='users')
     op.drop_index(op.f('ix_users_email'), table_name='users')
     op.drop_table('users')
+    op.drop_index(op.f('ix_roles_default'), table_name='roles')
     op.drop_table('roles')
     # ### end Alembic commands ###

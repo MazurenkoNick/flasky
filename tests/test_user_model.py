@@ -1,5 +1,5 @@
 import unittest
-from app.models import User, UserAuthentificationManager
+from app.models import User, UserAuthentificationManager, Permission, AnonymousUser
 from app import db
 
 
@@ -51,9 +51,26 @@ class UserModelTestCase(unittest.TestCase):
 
         auth_manager1 = UserAuthentificationManager(u1)
         auth_manager2 = UserAuthentificationManager(u2)
-        token1 = auth_manager1.generate_confirmation_token()
-        token2 = auth_manager2.generate_confirmation_token()
+        token1 = auth_manager1.generate_user_confirmation_token()
+        token2 = auth_manager2.generate_user_confirmation_token()
 
-        self.assertTrue(auth_manager1.confirm(token1))
-        self.assertTrue(auth_manager2.confirm(token2))
-        self.assertEquals(auth_manager1.confirm(auth_manager2), False)
+        self.assertTrue(auth_manager1.confirm_user(token1))
+        self.assertTrue(auth_manager2.confirm_user(token2))
+        self.assertEquals(auth_manager1.confirm_user(auth_manager2), False)
+
+def test_user_role(self):
+    u = User(email='john@example.com', password='cat')
+    self.assertTrue(u.can(Permission.FOLLOW))
+    self.assertTrue(u.can(Permission.COMMENT))
+    self.assertTrue(u.can(Permission.WRITE))
+    self.assertFalse(u.can(Permission.MODERATE))
+    self.assertFalse(u.can(Permission.ADMIN))
+
+def test_anonymous_user(self):
+    u = AnonymousUser()
+    self.assertFalse(u.can(Permission.FOLLOW))
+    self.assertFalse(u.can(Permission.COMMENT))
+    self.assertFalse(u.can(Permission.WRITE))
+    self.assertFalse(u.can(Permission.MODERATE))
+    self.assertFalse(u.can(Permission.ADMIN))
+    
