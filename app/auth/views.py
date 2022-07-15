@@ -98,11 +98,12 @@ def confirm(token):
 def before_request():
     # user is logged in & not confirmed &
     # the request is outside auth blueprint
-    if current_user.is_authenticated \
-        and not current_user.confirmed \
-        and request.blueprint != 'auth' \
-        and request.endpoint != 'static':
-        return redirect(url_for('auth.unconfirmed'))
+    if current_user.is_authenticated:
+        current_user.ping()
+        if not current_user.confirmed \
+                and request.blueprint != 'auth' \
+                and request.endpoint != 'static':
+            return redirect(url_for('auth.unconfirmed'))
 
 
 # UNCONFIRMED PAGE & RESEND CONFIRMATION HANDLER
