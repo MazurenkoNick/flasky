@@ -1,8 +1,9 @@
 import datetime
+import hashlib
 import jwt
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import AnonymousUserMixin, UserMixin
-from flask import current_app
+from flask import current_app, request
 from . import db, login_manager
 
 
@@ -86,6 +87,7 @@ class User(UserMixin, db.Model):
     about_me = db.Column(db.Text())
     member_since = db.Column(db.DateTime(), default=datetime.datetime.utcnow)
     last_seen = db.Column(db.DateTime(), default=datetime.datetime.utcnow)
+    avatar_hash = db.Column(db.String(32))
 
 
     def __init__(self, **kwargs):
@@ -95,6 +97,9 @@ class User(UserMixin, db.Model):
                 self.role = Role.query.filter_by(name='Administrator').first()
             else:
                 self.role = Role.query.filter_by(default=True).first()
+        
+        if self.email is not None and self.avatar_hash is None:
+            self.generate_gravatar_hash()
 
     def __repr__(self):
         return f'<User {self.username}>'
@@ -118,6 +123,24 @@ class User(UserMixin, db.Model):
     @password.setter
     def password(self, password):
         self.password_hash = generate_password_hash(password)
+
+    def generate_gravatar_hash(self):
+        self.avatar_hash = hashlib.md5(self.email.lower().encode('utf-8')).hexdigest()
+        db.session.add(self)
+        db.session.commit()
+
+    def gravatar(self, size=100, default='identicon', rating='g'):
+        if request.is_secure:
+            url = 'https://secure.gravatar.com/avatar'
+        else:
+            url = 'https://gravatar.com/avatar'
+        
+        if self.avatar_hash is None:
+            print('djsj')
+            self.generate_gravatar_hash()
+
+        hash = self.avatar_hash
+        return f'{url}/{hash}?s={size}&d={default}&r={rating}'
 
     def get_id(self):
         return str(self.user_id)
@@ -179,7 +202,6 @@ class UserAuthentificationManager:
     def generate_new_email_token(self, new_email, expiration=3600):
         email_token = jwt.encode(
             {
-                'user_id': self.user.user_id,
                 'email': self.user.email,
                 'new_email': new_email,
                 'exp': datetime.datetime.now(tz=datetime.timezone.utc) 
@@ -204,6 +226,8 @@ class UserAuthentificationManager:
         user = User.query.filter_by(email=data.get('email')).first()
         if user:
             user.email = data.get('new_email')
+            user.generate_gravatar_hash()
+            db.session.add(user)
             db.session.commit()
             return True
         else:

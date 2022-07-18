@@ -7,6 +7,18 @@ from .forms import LoginForm, RegistrationForm
 from . import auth
 
 
+@auth.before_app_request
+def before_request():
+    # user is logged in & not confirmed &
+    # the request is outside auth blueprint
+    if current_user.is_authenticated:
+        current_user.ping()
+        if not current_user.confirmed \
+                and request.blueprint != 'auth' \
+                and request.endpoint != 'static':
+            return redirect(url_for('auth.unconfirmed'))
+
+
 @auth.route('/login', methods=['GET','POST'])
 def login():
     form = LoginForm()
@@ -92,18 +104,6 @@ def confirm(token):
         User.query.filter_by(username=current_user.username).delete()
         db.session.commit()
     return redirect(url_for('main.index'))
-
-
-@auth.before_app_request
-def before_request():
-    # user is logged in & not confirmed &
-    # the request is outside auth blueprint
-    if current_user.is_authenticated:
-        current_user.ping()
-        if not current_user.confirmed \
-                and request.blueprint != 'auth' \
-                and request.endpoint != 'static':
-            return redirect(url_for('auth.unconfirmed'))
 
 
 # UNCONFIRMED PAGE & RESEND CONFIRMATION HANDLER
