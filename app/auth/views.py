@@ -11,7 +11,7 @@ from . import auth
 def before_request():
     # user is logged in & not confirmed &
     # the request is outside auth blueprint
-    if current_user.is_authenticated:
+    if current_user.is_authenticated is True:
         current_user.ping()
         if not current_user.confirmed \
                 and request.blueprint != 'auth' \
@@ -53,7 +53,7 @@ def logout():
 # USER REGISTRATION
 @auth.route('/register', methods=['GET', 'POST'])
 def register():
-    if current_user.is_authenticated:
+    if current_user.is_authenticated is True:
         return redirect(url_for('main.index'))
 
     form = RegistrationForm()
@@ -110,7 +110,7 @@ def confirm(token):
 # Unconfirmed user can only use this view on the site:
 @auth.route('/unconfirmed')
 def unconfirmed():
-    if current_user.is_anonymous or current_user.confirmed:
+    if current_user.is_anonymous is True or current_user.confirmed is True:
         return redirect(url_for('main.index'))
     return render_template('auth/unconfirmed.html')
 
@@ -118,7 +118,7 @@ def unconfirmed():
 @auth.route('/resend_confirmation')
 @login_required
 def resend_confirmation():
-    if current_user.is_anonymous or current_user.confirmed:
+    if current_user.is_anonymous is True or current_user.confirmed is True:
         return redirect(url_for('main.index'))
 
     auth_manager = UserAuthentificationManager(current_user)

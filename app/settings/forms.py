@@ -13,7 +13,7 @@ class ChangePasswordForm(FlaskForm):
         validators=[EqualTo(
             'confirm_password',
             message='Passwords must match.')])
-    confirm_password = PasswordField('Confrim your password',
+    confirm_password = PasswordField('Confrim your new password',
                                      validators=[DataRequired()])
     submit = SubmitField('Submit')
 

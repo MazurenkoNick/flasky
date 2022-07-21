@@ -47,7 +47,7 @@ def send_reset_password_confirmation():
 
 @settings.route("/resetpassword/<token>", methods=['GET', 'POST'])
 def reset_password(token):
-    if current_user.is_authenticated:
+    if current_user.is_authenticated is True:
         flash('User is logged in')
         return redirect(url_for('main.index'))
 

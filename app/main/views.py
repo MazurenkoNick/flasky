@@ -1,21 +1,34 @@
 from flask_login import login_required, current_user
 from flask import redirect, render_template, session, flash, url_for
 from app.decorators import admin_required
-from ..models import User, Role
+from ..models import Permission, Post, User, Role
 from .. import db
-from .forms import EditProfileAdminForm, EditProfileForm
+from .forms import EditProfileAdminForm, EditProfileForm, PostForm
 from . import main
 
 
 @main.route('/', methods=['GET', 'POST'])
 def index():
-    return render_template('index.html', name=session.get('name'))
+    form = PostForm()
+    if current_user.can(Permission.WRITE) and form.validate_on_submit():
+        post = Post(
+            body = form.body.data,
+            author = current_user._get_current_object()
+            )
+        db.session.add(post)
+        db.session.commit()
+        return redirect(url_for('.index'))
+
+    # all posts in descending order
+    posts = Post.query.order_by(Post.timestamp.desc()).all()
+    return render_template('index.html', form=form, posts=posts)
 
 
 @main.route('/user/<username>')
 def user(username):
     user = User.query.filter_by(username=username).first_or_404()
-    return render_template('user.html', user=user)
+    posts = user.posts.order_by(Post.timestamp.desc()).all()
+    return render_template('user.html', user=user, posts=posts)
 
 
 @main.route('/edit-profile', methods=['POST', 'GET'])
@@ -41,7 +54,7 @@ def edit_profile():
 @main.route('/edit-profile/<int:id>', methods=['GET', 'POST'])
 @login_required
 @admin_required 
-def edif_profile_admin(id):
+def edit_profile_admin(id):
     user = User.query.get_or_404(id)
     form = EditProfileAdminForm(user)
     if form.validate_on_submit():
