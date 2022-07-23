@@ -12,6 +12,7 @@ class Config:
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME') 
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    FLASKY_POSTS_PER_PAGE = 15
 
     def init_app(app):
         pass

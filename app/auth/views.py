@@ -19,7 +19,7 @@ def before_request():
             return redirect(url_for('auth.unconfirmed'))
 
 
-@auth.route('/login', methods=['GET','POST'])
+@auth.route('/login', methods=['POST','GET'])
 def login():
     form = LoginForm()
     
