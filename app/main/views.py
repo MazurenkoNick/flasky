@@ -1,5 +1,5 @@
 from flask_login import login_required, current_user
-from flask import redirect, render_template, request, flash, url_for, current_app
+from flask import abort, redirect, render_template, request, flash, url_for, current_app
 from app.decorators import admin_required
 from ..models import Permission, Post, User, Role
 from .. import db
@@ -90,3 +90,19 @@ def edit_profile_admin(id):
 def post(id):
     post = Post.query.get_or_404(id)
     return render_template('post.html', posts=[post])
+
+@main.route('/edit-post/<int:id>', methods=['GET', 'POST'])
+def edit_post(id):
+    post = Post.query.get_or_404(id)
+    if post.author != current_user and not current_user.can(Permission.ADMIN):
+        abort(403)
+    
+    form = PostForm()
+    if form.validate_on_submit():
+        post.body = form.body.data
+        db.session.add(post)
+        db.session.commit()
+        return redirect(url_for('.post', id=post.id))
+    
+    form.body.data = post.body
+    return render_template('edit_post.html', form=form)
